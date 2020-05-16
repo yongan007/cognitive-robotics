@@ -21,14 +21,14 @@ class BalancebotEnv(gym.Env):
     def __init__(self, render=False):
 
         self._observation = []
-        self.action_space = spaces.Discrete(9)
+        self.action_space = spaces.Discrete(4)
         self.observation_space = spaces.Box(np.array([0, 0, 5]), 
                                             np.array([0, 0, 5])) # pitch, gyro, com.sp.
     
         # if (render):
-        # self.physicsClient = p.connect(p.GUI)
+        self.physicsClient = p.connect(p.GUI)
         # else:
-        self.physicsClient = p.connect(p.DIRECT)  # non-graphical version
+        # self.physicsClient = p.connect(p.DIRECT)  # non-graphical version
 
         p.setAdditionalSearchPath(pybullet_data.getDataPath())  # used by loadURDF
 
@@ -80,7 +80,7 @@ class BalancebotEnv(gym.Env):
     def _assign_throttle(self, action):
         # print(action)
         dv = 0.1
-        deltav = [-10.*dv,-5.*dv, -2.*dv, -0.1*dv, 0, 0.1*dv, 2.*dv,5.*dv, 10.*dv][action]
+        deltav = [0.1*dv, 2.*dv,5.*dv, 10.*dv][action]
         vt = clamp(self.vt + deltav, -self.maxV, self.maxV)
         self.vt = vt
 
@@ -97,7 +97,11 @@ class BalancebotEnv(gym.Env):
         cubePos, cubeOrn = p.getBasePositionAndOrientation(self.botId)
         cubeEuler = p.getEulerFromQuaternion(cubeOrn)
         linear, angular = p.getBaseVelocity(self.botId)
-        return [cubeEuler[0],angular[0],self.vt]
+        
+        x = cubePos[0]+self.vt
+        y = cubePos[1]+self.vt
+
+        return [x,y,self.vt]
 
         
     def _compute_reward(self):
@@ -111,7 +115,7 @@ class BalancebotEnv(gym.Env):
     def _compute_done(self):
         cubePos, _ = p.getBasePositionAndOrientation(self.botId)
 
-        return self._envStepCounter >= 1500
+        return self._envStepCounter >= 2000
 
     def _render(self, mode='human', close=False):
         pass
