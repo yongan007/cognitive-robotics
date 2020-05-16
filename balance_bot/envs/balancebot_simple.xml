@@ -89,13 +89,6 @@
 </inertial>
 </link>
 
-<joint name="torso_rear" type="fixed">
-<parent link="torso"/>
-<child link="rear"/>
-<axis xyz="-1 0 0"/>
-<limit effort="1000.0" lower="0.0" upper="0.548" velocity="0.0"/>
-<origin rpy="0 0 0" xyz="0 0.15 0.06"/>
-</joint>
 
 <joint name="torso_l_wheel" type="continuous">
 <parent link="torso"/>
@@ -110,5 +103,13 @@
 <axis xyz="1 0 0"/>
 <limit effort="1000.0" lower="0.0" upper="0.548" velocity="0.0"/>
 <origin rpy="0 0 0" xyz="0.12 -0.1 0.1"/>
+</joint>
+
+<joint name="torso_rear" type="fixed">
+<parent link="torso"/>
+<child link="rear"/>
+<axis xyz="-1 0 0"/>
+<limit effort="1000.0" lower="0.0" upper="0.548" velocity="0.0"/>
+<origin rpy="0 0 0" xyz="0 0.15 0.06"/>
 </joint>
 </robot>

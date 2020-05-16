@@ -1,0 +1,27 @@
+<robot name="wall">
+
+	<!-- * * * Link Definitions * * * -->
+
+<link name="wall_righ">
+    <visual>
+    <geometry>
+    <box size="0.5 5 0.2"/>
+    </geometry>
+    <origin rpy="0 0 0" xyz="0 0.0 0.1"/>
+    <material name="white"/>
+    </visual>
+    <collision>
+    <geometry>
+    <box size="0.5 5 0.2"/>
+    </geometry>
+    <origin rpy="0 0 0" xyz="0 0.0 0.1"/>
+    </collision>
+    <inertial>
+    <mass value="1"/>
+    <inertia ixx="0.08" ixy="0.0" ixz="0.0" iyy="0.08" iyz="0.0" izz="0.08"/>
+    <origin rpy="0 0 0" xyz="0 0.0 0.3"/>
+    </inertial>
+</link>
+
+ 
+</robot>

@@ -28,13 +28,13 @@ class BalancebotEnv(gym.Env):
 
         self._observation = []
         self.action_space = spaces.Discrete(4)
-        self.observation_space = spaces.Box(np.array([0, 0, 5]), 
-                                            np.array([0, 0, 5])) # robot pose x,y and speed 
+        self.observation_space = spaces.Box(np.array([0, 2, 5]), 
+                                            np.array([0, 10, 5])) # robot pose x,y and speed 
     
         # if (render):
-        # self.physicsClient = p.connect(p.GUI)
+        self.physicsClient = p.connect(p.GUI)
         # else:
-        self.physicsClient = p.connect(p.DIRECT)  # non-graphical version
+        # self.physicsClient = p.connect(p.DIRECT)  # non-graphical version
 
         p.setAdditionalSearchPath(pybullet_data.getDataPath())  # used by loadURDF
 
@@ -64,24 +64,44 @@ class BalancebotEnv(gym.Env):
         self.maxV = 24.6 # 235RPM = 24,609142453 rad/sec
         self._envStepCounter = 0
 
+
         p.resetSimulation()
         p.setGravity(0,0,-10) # m/s^2
         p.setTimeStep(0.01) # sec
-        planeId = p.loadURDF("plane.urdf")
-        cubeStartPos = [0,0,0.001]
-        cubeStartOrientation = p.getQuaternionFromEuler([0,0,0])
+        self._load_geometry()
 
-        path = os.path.abspath(os.path.dirname(__file__))
-        self.botId = p.loadURDF(os.path.join(path, "balancebot_simple.xml"),
-                           cubeStartPos,
-                           cubeStartOrientation)
+        self._load_bot()
+        self._load_box()
 
         # you *have* to compute and return the observation from reset()
         self._observation = self._compute_observation()
         return np.array(self._observation)
 
-    # def _load_geometry(self):
-    #     self.groundId = p.loadURDF("plane.urdf")
+    def _load_geometry(self):
+        self.groundId = p.loadURDF("plane.urdf")
+    
+    def _load_box(self):
+        boxStartPos_r = [0.7,-3.0,0.001]
+        boxStartPos_l = [-0.7,-3.0,0.001]
+        boxStartOrientation = p.getQuaternionFromEuler([0,0,0])
+        path = os.path.abspath(os.path.dirname(__file__))
+        self.boxId_right = p.loadURDF(os.path.join(path, "box.xml"),
+                           boxStartPos_r,
+                           boxStartOrientation)
+                           
+        self.boxId_left = p.loadURDF(os.path.join(path, "box.xml"),
+                           boxStartPos_l,
+                           boxStartOrientation)
+
+
+    def _load_bot(self):
+        cubeStartPos = [0,0,0.001]
+        cubeStartOrientation = p.getQuaternionFromEuler([0,0,0])
+        path = os.path.abspath(os.path.dirname(__file__))
+        self.botId = p.loadURDF(os.path.join(path, "balancebot_simple.xml"),
+                           cubeStartPos,
+                           cubeStartOrientation)
+
 
     def _assign_throttle(self, action):
         # print(action)
@@ -97,7 +117,7 @@ class BalancebotEnv(gym.Env):
         p.setJointMotorControl2(bodyUniqueId=self.botId, 
                                 jointIndex=1, 
                                 controlMode=p.VELOCITY_CONTROL, 
-                                targetVelocity=-vt,force=1000)
+                                targetVelocity=vt,force=1000)
 
     def _compute_observation(self):
         cubePos, cubeOrn = p.getBasePositionAndOrientation(self.botId)
@@ -131,4 +151,3 @@ def clamp(n, minn, maxn):
     return max(min(maxn, n), minn)
 
 
-    #python3 ../bin/es.py -f balancebot.ini -s 2
