@@ -1,2 +1,3 @@
-/balance_bot.egg-info
-__pycachae__
+*.egg-info
+__pycache__/
+*.py[cod]
