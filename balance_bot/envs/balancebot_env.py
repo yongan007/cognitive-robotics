@@ -10,7 +10,13 @@ import pybullet as p
 import pybullet_data
 
 
+"""
+The main objective is move robot forward: 
 
+- I observe robot pose X, Y and speed
+
+- reward : r = sum(linear) - sum(angular)
+"""
 
 class BalancebotEnv(gym.Env):
     metadata = {
@@ -23,12 +29,12 @@ class BalancebotEnv(gym.Env):
         self._observation = []
         self.action_space = spaces.Discrete(4)
         self.observation_space = spaces.Box(np.array([0, 0, 5]), 
-                                            np.array([0, 0, 5])) # pitch, gyro, com.sp.
+                                            np.array([0, 0, 5])) # robot pose x,y and speed 
     
         # if (render):
-        self.physicsClient = p.connect(p.GUI)
+        # self.physicsClient = p.connect(p.GUI)
         # else:
-        # self.physicsClient = p.connect(p.DIRECT)  # non-graphical version
+        self.physicsClient = p.connect(p.DIRECT)  # non-graphical version
 
         p.setAdditionalSearchPath(pybullet_data.getDataPath())  # used by loadURDF
 
@@ -110,7 +116,8 @@ class BalancebotEnv(gym.Env):
         linear, angular = p.getBaseVelocity(self.botId)
         r = sum(linear) - sum(angular)
         # receive a bonus of 1 for balancing and pay a small cost proportional to speed
-        return r  #1.0 - abs(self.vt) * 0.05
+
+        return   r #1.0 - abs(self.vt) * 0.05
 
     def _compute_done(self):
         cubePos, _ = p.getBasePositionAndOrientation(self.botId)
@@ -122,3 +129,6 @@ class BalancebotEnv(gym.Env):
 
 def clamp(n, minn, maxn):
     return max(min(maxn, n), minn)
+
+
+    #python3 ../bin/es.py -f balancebot.ini -s 2
