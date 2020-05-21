@@ -27,9 +27,9 @@ class BalancebotEnv(gym.Env):
     def __init__(self, render=False):
 
         self._observation = []
-        self.action_space = spaces.Discrete(4)
+        self.action_space = spaces.Discrete(2)
         self.observation_space = spaces.Box(np.array([0, 10, 20]), 
-                                            np.array([0, 20, 20])) # robot pose x,y and speed 
+                                            np.array([0, -10, -20])) # robot pose x,y and speed 
     
         # if (render):
         self.physicsClient = p.connect(p.GUI)
@@ -45,7 +45,7 @@ class BalancebotEnv(gym.Env):
         return [seed]
 
     def _step(self, action):
-        self._assign_throttle(action)
+        self._assign_throttle_1(action)
         p.stepSimulation()
         self._observation = self._compute_observation()
         reward = self._compute_reward()
@@ -58,7 +58,8 @@ class BalancebotEnv(gym.Env):
 
     def _reset(self):
         # reset is called once at initialization of simulation
-        self.vt = 0
+        self.vt1 = 0
+        self.vt2 = 0
         self.maxV = 24.6 # 235RPM = 24,609142453 rad/sec
         self._envStepCounter = 0
 
@@ -96,36 +97,36 @@ class BalancebotEnv(gym.Env):
         cubeStartPos = [0,0,0.001]
         cubeStartOrientation = p.getQuaternionFromEuler([0,0,0])
         path = os.path.abspath(os.path.dirname(__file__))
-        self.botId = p.loadURDF(os.path.join(path, "box_bot.xml"),
+        self.botId = p.loadURDF(os.path.join(path, "cilindric_bot.xml"),
                            cubeStartPos,
                            cubeStartOrientation)
 
 
-    def _assign_throttle(self, action):
-  
-        dv = 0.1
-        deltav = [0.1*dv, 2.*dv,5.*dv, 10.*dv][action]
-        vt = clamp(self.vt + deltav, -self.maxV, self.maxV)
-        self.vt = vt
+    def _assign_throttle_1(self, action):
+ 
+     
+        vt1 = [-self.maxV, self.maxV][action]# define speed range from 10%of full speed to 100% full speed
+        vt2 = [-self.maxV, self.maxV][action]
+        self.vt1 = vt1
+        self.vt2 = vt2
 
         p.setJointMotorControl2(bodyUniqueId=self.botId, 
                                 jointIndex=0, 
                                 controlMode=p.VELOCITY_CONTROL, 
-                                targetVelocity=-vt,force=1000)
+                                targetVelocity=-vt1,force=1000)
         p.setJointMotorControl2(bodyUniqueId=self.botId, 
                                 jointIndex=1, 
                                 controlMode=p.VELOCITY_CONTROL, 
-                                targetVelocity=vt,force=1000)
+                                targetVelocity=vt1,force=1000)
+
+
 
     def _compute_observation(self):
         cubePos, cubeOrn = p.getBasePositionAndOrientation(self.botId)
         cubeEuler = p.getEulerFromQuaternion(cubeOrn)
         linear, angular = p.getBaseVelocity(self.botId)
-        
-        x = cubePos[0]+self.vt
-        y = cubePos[1]+self.vt
-
-        return [x,y,self.vt]
+     
+        return [self.vt1,self.vt2]
 
     def _compute_collision(self):
         
@@ -140,15 +141,13 @@ class BalancebotEnv(gym.Env):
         contract_points = np.array(contract_point)
         number_of_body = contract_points.shape[0]
 
-
-
-        if number_of_body > 0 and contract_points[0,3] == -1  :
+        print(contract_points[0,2])
+        #detect if it is touch the wall 
+        if number_of_body > 0 and contract_points[0,2] == 3 :
             detected = True 
         else:
             detected = False
 
-        # print(detected)
-        
         return detected
         # return a[0,3] 
 
@@ -159,16 +158,15 @@ class BalancebotEnv(gym.Env):
 
         linear, angular = p.getBaseVelocity(self.botId)
         r = sum(linear) #- sum(angular)
-        # receive a bonus of 1 for balancing and pay a small cost proportional to speed
 
-        return   self.vt#1.0 - abs(self.vt) * 0.05
+        return   self.vt1+self.vt2
 
     def _compute_done(self):
         # episode ends when the barycentre of the robot is too low or after 500 steps
-        detected = self._compute_collision()
+        # detected = self._compute_collision()
         # print(a)
 
-        return detected == True or self._envStepCounter >= 1500
+        return self._envStepCounter >= 1500 #or detected == True
 
     def _render(self, mode='human', close=False):
         pass

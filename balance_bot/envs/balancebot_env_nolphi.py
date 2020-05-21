@@ -59,7 +59,7 @@ class BalancebotEnv(gym.Env):
         robotStartOrientation = p.getQuaternionFromEuler([self.np_random.uniform(low=-
         0.3, high=0.3),0,0])
         path = os.path.abspath(os.path.dirname(__file__))
-        self.botId = p.loadURDF(os.path.join(path, "balancebot_simple.xml"),
+        self.botId = p.loadURDF(os.path.join(path, "cilindric_bot.xml"),
         robotStartPos,
         robotStartOrientation)
         self.observation = self.compute_observation()

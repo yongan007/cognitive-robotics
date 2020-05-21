@@ -1,6 +1,6 @@
 <robot name="wall">
 
-	<!-- * * * Link Definitions * * * -->
+
 
 <link name="wall_righ">
     <visual>
