@@ -1,2 +1,2 @@
-from balance_bot.envs.wheelbot_env import BalancebotEnv
+from balance_bot.envs.wheelbot_env_indendant_wheel import BalancebotEnv
 from balance_bot.envs.balancebot_env_noise import BalancebotEnvNoise

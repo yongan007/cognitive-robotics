@@ -9,14 +9,14 @@
 <link name="torso">
     <visual>
     <geometry>
-    <cylinder radius="0.14" length="0.3"/>
+    <cylinder radius="0.14" length="0.2"/>
     </geometry>
     <origin rpy="0 0 0" xyz="0 0.0 0.2"/>
     <material name="white"/>
     </visual>
     <collision>
     <geometry>
-    <cylinder radius="0.14" length="0.3"/>
+    <cylinder radius="0.14" length="0.2"/>
     </geometry>
     <origin rpy="0 0 0" xyz="0 0.0 0.2"/>
     </collision>
@@ -99,7 +99,7 @@
 <child link="l_wheel"/>
 <axis xyz="-1 0 0"/>
 <limit effort="1000.0" lower="0.0" upper="0.548" velocity="0.0"/>
-<origin rpy="0 0 0" xyz="-0.16 -0.02 0.1"/>
+<origin rpy="0 0 0" xyz="-0.16 0.04 0.1"/>
 </joint>
 
 <joint name="torso_r_wheel" type="continuous">
@@ -107,7 +107,7 @@
 <child link="r_wheel"/>
 <axis xyz="1 0 0"/>
 <limit effort="1000.0" lower="0.0" upper="0.548" velocity="0.0"/>
-<origin rpy="0 0 0" xyz="0.16 -0.02 0.1"/>
+<origin rpy="0 0 0" xyz="0.16 0.04 0.1"/>
 </joint>
 
 <joint name="torso_rear" type="fixed">
@@ -115,6 +115,6 @@
 <child link="rear"/>
 <axis xyz="-1 0 0"/>
 <limit effort="1000.0" lower="0.0" upper="0.548" velocity="0.0"/>
-<origin rpy="0 0 0" xyz="0 0.12 0.06"/>
+<origin rpy="0 0 0" xyz="0 -0.12 0.06"/>
 </joint>
 </robot>
