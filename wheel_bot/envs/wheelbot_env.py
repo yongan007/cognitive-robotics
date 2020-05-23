@@ -10,15 +10,9 @@ import pybullet as p
 import pybullet_data
 
 
-"""
-The main objective is move robot forward: 
 
-- I observe robot pose X, Y and speed
 
-- reward : r = sum(linear) - sum(angular)
-"""
-
-class BalancebotEnv(gym.Env):
+class WheelbotEnv(gym.Env):
     metadata = {
         'render.modes': ['human', 'rgb_array'],
         'video.frames_per_second' : 50

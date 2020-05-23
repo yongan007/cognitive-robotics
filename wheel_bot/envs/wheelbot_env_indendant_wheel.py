@@ -10,15 +10,8 @@ import pybullet as p
 import pybullet_data
 
 
-"""
-The main objective is move robot forward: 
 
-- I observe robot pose X, Y and speed
-
-- reward : r = sum(linear) - sum(angular)
-"""
-
-class BalancebotEnv(gym.Env):
+class WheelbotEnv(gym.Env):
     metadata = {
         'render.modes': ['human', 'rgb_array'],
         'video.frames_per_second' : 50
@@ -32,9 +25,9 @@ class BalancebotEnv(gym.Env):
                                             np.array([0, -10, -20])) # robot pose x,y and speed 
     
         # if (render):
-        # self.physicsClient = p.connect(p.GUI)
+        self.physicsClient = p.connect(p.GUI)
         # else:
-        self.physicsClient = p.connect(p.DIRECT)  # non-graphical version
+        # self.physicsClient = p.connect(p.DIRECT)  # non-graphical version
 
         p.setAdditionalSearchPath(pybullet_data.getDataPath())  # used by loadURDF
 
@@ -45,7 +38,7 @@ class BalancebotEnv(gym.Env):
         return [seed]
 
     def _step(self, action):
-        self._assign_throttle_1(action)
+        self.acuator_control(action)
         p.stepSimulation()
         self._observation = self._compute_observation()
         reward = self._compute_reward()
@@ -63,23 +56,34 @@ class BalancebotEnv(gym.Env):
         self.maxV = 10# 235RPM = 24,609142453 rad/sec
         self._envStepCounter = 0
 
-
         p.resetSimulation()
         p.setGravity(0,0,-10) # m/s^2
         p.setTimeStep(0.01) # sec
         self._load_geometry()
 
         self._load_bot()
-        self._load_box()
+        self._load_wall()
 
         # you *have* to compute and return the observation from reset()
         self._observation = self._compute_observation()
         return np.array(self._observation)
 
+        
+    def _compute_observation(self):
+        cubePos, cubeOrn = p.getBasePositionAndOrientation(self.botId)
+        cubeEuler = p.getEulerFromQuaternion(cubeOrn)
+        linear, angular = p.getBaseVelocity(self.botId)
+
+        x = cubePos[0] #+self.vt1
+        y = cubePos[1]#+self.vt1
+
+        return [-x, -y , linear[1]]
+
+
     def _load_geometry(self):
         self.groundId = p.loadURDF("plane.urdf")
     
-    def _load_box(self):
+    def _load_wall(self):
         boxStartPos_r = [0.7,-1.0,0.001]
         boxStartPos_l = [-0.7,-1.0,0.001]
         boxStartOrientation = p.getQuaternionFromEuler([0,0,0])
@@ -92,20 +96,17 @@ class BalancebotEnv(gym.Env):
                            boxStartOrientation)
         
 
-
     def _load_bot(self):
         cubeStartPos = [0,0,0.001]
         cubeStartOrientation = p.getQuaternionFromEuler([0,0,np.pi])
         path = os.path.abspath(os.path.dirname(__file__))
-        self.botId = p.loadURDF(os.path.join(path, "cilindric_bot.xml"),#cilindric_bot.xml
+        self.botId = p.loadURDF(os.path.join(path, "box_bot.xml"),#cilindric_bot.xml
                            cubeStartPos,
                            cubeStartOrientation)
 
 
-    def _assign_throttle_1(self, action):
- 
-     
-        vt1 = [-self.maxV, self.maxV][action]#[-self.maxV,-0.5*self.maxV,0, 0.5*self.maxV, self.maxV]
+    def acuator_control(self, action):
+        vt1 = [-self.maxV, self.maxV][action]
         vt2 = [-self.maxV, self.maxV][action]
         self.vt1 = vt1
         self.vt2 = vt2
@@ -120,18 +121,6 @@ class BalancebotEnv(gym.Env):
                                 targetVelocity=-
                                 vt2,force=1000)
 
-
-
-    def _compute_observation(self):
-        cubePos, cubeOrn = p.getBasePositionAndOrientation(self.botId)
-        cubeEuler = p.getEulerFromQuaternion(cubeOrn)
-        linear, angular = p.getBaseVelocity(self.botId)
-
-        x = cubePos[0] #+self.vt1
-        y = cubePos[1]#+self.vt1
-
-        return [-x, -y , self.vt1]
-
     def _compute_collision(self):
         
          #robot info   
@@ -145,12 +134,12 @@ class BalancebotEnv(gym.Env):
         contract_points = np.array(contract_point)
         number_of_body = contract_points.shape[0]
 
+        # print(contract_points[1,3])
         #detect if it is touch the wall 
-        if number_of_body == 0 :#and contract_points[0,2] == 3 :
+        if number_of_body == 0 or number_of_body == 1:#and contract_points[0,2] == 3 :
             detected = True 
         else:
             detected = False
-
         return detected
         # return a[0,3] 
 
@@ -158,18 +147,17 @@ class BalancebotEnv(gym.Env):
     def _compute_reward(self):
         robotPos, robotOrn = p.getBasePositionAndOrientation(self.botId)
         robotEuler = p.getEulerFromQuaternion(robotOrn)
-
         linear, angular = p.getBaseVelocity(self.botId)
-        r = sum(linear) #- sum(angular)
+        r = sum(linear)
 
-        return   self.vt1+self.vt2
+        return   r
 
     def _compute_done(self):
         # episode ends when the barycentre of the robot is too low or after 500 steps
         detected = self._compute_collision()
 
 
-        return self._envStepCounter >= 1000 or detected == True
+        return self._envStepCounter >= 700 or detected == True
 
     def _render(self, mode='human', close=False):
         pass
