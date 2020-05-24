@@ -28,11 +28,30 @@ For example
 
 Model_name : bestgS7.npy. 
 
+## result 
 
+>While training
+
+![alt text](img/training.gif)
+
+>Moving forward 
+
+
+![alt text](img/backward.gif)
+
+
+>Moving backward 
+
+![alt text](img/forward.gif)
+
+> with body box 
 
 ![alt text](img/s1.gif)
 
-result 
 
 
-> This code is adopted from https://backyardrobotics.eu/2017/11/27/build-a-balancing-bot-with-openai-gym-pt-i-setting-up/.
+> evorobotpy can be found at : https://github.com/snolfi/evorobotpy
+
+> This code is adopted partially from https://backyardrobotics.eu/2017/11/27/build-a-balancing-bot-with-openai-gym-pt-i-setting-up/
+
+

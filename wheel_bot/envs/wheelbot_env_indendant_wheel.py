@@ -77,7 +77,7 @@ class WheelbotEnv(gym.Env):
         x = cubePos[0] #+self.vt1
         y = cubePos[1]#+self.vt1
 
-        return [-x, -y , linear[1]]
+        return [x, y , linear[1]]
 
 
     def _load_geometry(self):
@@ -100,7 +100,7 @@ class WheelbotEnv(gym.Env):
         cubeStartPos = [0,0,0.001]
         cubeStartOrientation = p.getQuaternionFromEuler([0,0,np.pi])
         path = os.path.abspath(os.path.dirname(__file__))
-        self.botId = p.loadURDF(os.path.join(path, "box_bot.xml"),#cilindric_bot.xml
+        self.botId = p.loadURDF(os.path.join(path, "cilindric_bot.xml"),#cilindric_bot.xml
                            cubeStartPos,
                            cubeStartOrientation)
 
@@ -157,7 +157,7 @@ class WheelbotEnv(gym.Env):
         detected = self._compute_collision()
 
 
-        return self._envStepCounter >= 700 or detected == True
+        return self._envStepCounter >= 1500 #or detected == True
 
     def _render(self, mode='human', close=False):
         pass
